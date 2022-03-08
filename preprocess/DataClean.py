@@ -150,7 +150,7 @@ class Preprocess:
 
     def format_new_data(
         self,
-        write: bool = True, outpath: str = None, overwrite: bool = True,
+        outpath: str = None, overwrite: bool = True,
         CNPJ_only_numbers: bool = True,
         CNPJ_to_keep_path: str = None,
         inrange_filters: List[Dict[str, List[float]]] = []
@@ -169,10 +169,6 @@ class Preprocess:
         if self.type == "existing":
             raise Exception("Can't preprocess already preprocessated data.")
 
-        # CHECKING IF ARGUMENTS ARE CONSISTENT
-        if write and not bool(outpath):
-            raise Exception("If 'write' is true, then outpath must be specified.")
-
         # KEEP ONLY NUMBERS IN CNPJ
         if CNPJ_only_numbers:
             self.data = self.data.replace({'CNPJ_FUNDO': r'[^\d]'}, {'CNPJ_FUNDO': ''}, regex=True)  
@@ -186,7 +182,7 @@ class Preprocess:
             self.apply_filters(inrange_filters)
 
         # WRITING
-        if write:
+        if outpath:
             return self.write(outpath=outpath, overwrite=overwrite)
         else:
             return Preprocess(data=self.data, type=self.type)
