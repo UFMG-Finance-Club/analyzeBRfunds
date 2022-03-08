@@ -159,7 +159,6 @@ class Preprocess:
     ):
         """Format raw data.
 
-        :param write: whether to write in disk after computations
         :param outpath: path to the output data
         :param overwrite: whether to overwrite existing preprocessed file in outpath
         :param CNPJ_only_numbers: remove CNPJ special characters and keep only numbers
