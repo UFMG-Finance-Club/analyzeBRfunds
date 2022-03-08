@@ -60,8 +60,10 @@ class Preprocess:
                 ))
                 filenames_inpath = [fn[:-4] for fn in filenames_inpath]
                 self.inpath = os.path.join(self.inpath, "*.csv")
-                
-            self.data = dd.read_csv(self.inpath, sep=";")
+
+            columns_to_read = ['CNPJ_FUNDO', 'DT_COMPTC', 'VL_TOTAL', 'VL_QUOTA', 'VL_PATRIM_LIQ', 'CAPTC_DIA', 'RESG_DIA', 'NR_COTST']
+
+            self.data = dd.read_csv(self.inpath, sep=";", usecols=columns_to_read)
             self.files_read = filenames_inpath
         
         if not info_status:
