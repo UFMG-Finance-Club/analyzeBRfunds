@@ -87,6 +87,7 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
     data.columns = ["Date", "Value"]
     data["Name"] = "Risk_free"
     data = data[["Date", "Name", "Value"]]
+    data = data[data["Date"].between(date_interval[0], date_interval[1], inclusive="both")]
     data.to_csv(outpath, index=False)
 
     return data
