@@ -49,10 +49,11 @@ def download_funds(months_interval: List[datetime.date], outpath: str) -> List[s
     return output_file_names
 
 # DOWNLOAD IBOV
-def download_ibov(date_interval: List[datetime.date]) -> pd.DataFrame:
-    """Download IBOV data
+def download_ibov(date_interval: List[datetime.date], outpath: str = None) -> pd.DataFrame:
+    """Download IBOV data from Yahoo Finance
     
     :param date_interval: date interval to download data
+    :param outpath: optional outpath to write data
     """
 
     data = (
@@ -61,6 +62,32 @@ def download_ibov(date_interval: List[datetime.date]) -> pd.DataFrame:
     )[["Date", "Adj Close"]]
     data.columns = ["Date", "Value"]
     data["Name"] = "IBOV"
+    data = data[["Date", "Name", "Value"]]
+
+    if outpath:
+        data.to_csv(outpath, index=False)
+
+    return data
+
+# DOWNLOAD RISK FREE
+def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.DataFrame:
+    """Download Risk Free data (30-day DI swap) from NEFIN
+
+    :param date_interval: date interval to download data
+    :param outpath: outpath to write data   
+    """
+
+    r = requests.get("https://nefin.com.br/resources/risk_factors/Risk_Free.xls", allow_redirects=True)
+    outpath_xls = os.path.join(os.path.dirname(outpath), "Risk_free.xls")
+    open(outpath_xls, "wb").write(r.content)
+
+    data = pd.read_excel(outpath)
+    data["Date"] = pd.to_datetime(f"{data['year']/data['month']/data['day']}")
+    data = data[["Date", "Risk_free"]]
+    data.columns = ["Date", "Value"]
+    data["Name"] = "Risk_free"
+    data = data[["Date", "Name", "Value"]]
+    data.to_csv(outpath, index=False)
 
     return data
 
@@ -90,7 +117,4 @@ def download_data(
         datetime.date(last_date[0], last_date[1], last_day)
     ]
 
-    if outpath:
-        correspondence_asset_function[asset](date_interval, outpath)
-    else:
-        correspondence_asset_function[asset](date_interval)
+    correspondence_asset_function[asset](date_interval, outpath)
