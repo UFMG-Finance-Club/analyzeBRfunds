@@ -85,15 +85,16 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
     outpath_xls = os.path.join(os.path.dirname(outpath), "Risk_free.xls")
     open(outpath_xls, "wb").write(r.content)
 
-    data = pd.read_excel(outpath)
-    data["Date"] = pd.to_datetime(f"{data['year']/data['month']/data['day']}")
+    data = pd.read_excel(outpath_xls, dtype={"year" : str, "month" : str, "day" : str})
+    
+    data["Date"] = pd.to_datetime(data["year"] + "/" + data["month"] + "/" + data["day"]).dt.date
     data = data[["Date", "Risk_free"]]
     data.columns = ["Date", "Value"]
     data["Name"] = "Risk_free"
     data = data[["Date", "Name", "Value"]]
     data = data[data["Date"].between(date_interval[0], date_interval[1], inclusive="both")]
     data.to_csv(outpath, index=False)
-
+    
     return data
 
 # DOWNLOAD DATA - GENERAL
