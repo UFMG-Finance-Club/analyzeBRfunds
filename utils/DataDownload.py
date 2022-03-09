@@ -4,7 +4,7 @@ import pandas_datareader as pdr
 import datetime
 import os
 from collections import OrderedDict
-from typing import List
+from typing import List, Union
 
 def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
     """Return list of months between a given interval. You should not need to evoke this directly.
@@ -97,7 +97,10 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
     return data
 
 # DOWNLOAD DATA - GENERAL
-def download_data(first_date: List[int], last_date: List[int], asset: str = "FUNDS", outpath: str = None) -> None:
+def download_data(
+    first_date: Union[datetime.date, List[int]], last_date: Union[datetime.date, List[int]], 
+    asset: str = "FUNDS", outpath: str = None
+) -> None:
     """General function to download supported data
     
     :param first_date: list with first year and month
@@ -106,13 +109,13 @@ def download_data(first_date: List[int], last_date: List[int], asset: str = "FUN
     :param outpath: (local) path to save downloaded data
     """
 
-    first_day = first_date[2] if len(first_date) == 3 else 5
-    last_day = last_date[2] if len(last_date) == 3 else 5
+    date_interval = [first_date, last_date]
 
-    date_interval = [
-        datetime.date(first_date[0], first_date[1], first_day),
-        datetime.date(last_date[0], last_date[1], last_day)
-    ]
+    for i in range(2):
+        if isinstance(date_interval[i], list):
+            if len(date_interval[i]) < 3:
+                date_interval[i].append(1)
+            date_interval[i] = datetime.date(date_interval[i][0], date_interval[i][1], date_interval[i][2])
     
     if asset == "FUNDS":
         return download_funds(date_interval, outpath)
