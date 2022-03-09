@@ -6,7 +6,7 @@ from typing import List, Dict
 
 class PerformanceMetrics():
 
-    def __init__(self, inpath: str, first_date: List[int] = None, last_date: List[int] = None):
+    def __init__(self, inpath: str, first_date: List[int] = None, last_date: List[int] = None) -> None:
         """A class to evalute several financial metrics to funds' data.
         
         :param inpath: path with preprocessed data to read
@@ -22,7 +22,7 @@ class PerformanceMetrics():
                 usecols=["Date", "Name", "Value"]
             )
         )
-        return self.data
+        
         """
         self.data["Date"] = pd.to_datetime(self.data["Date"]).dt.date
         self.data["Asset"] = "FUNDO"
