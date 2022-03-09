@@ -63,6 +63,7 @@ class PerformanceMetrics():
     def get_returns(self, silent: bool = False) -> None:
         """Compute returns
 
+        :param silent: whether to return data
         """
         self.returns_data = (
             self.data
@@ -71,3 +72,6 @@ class PerformanceMetrics():
             .dropna(axis=1)
             .pct_change()
         )
+
+        if not silent:
+            return self.returns_data
