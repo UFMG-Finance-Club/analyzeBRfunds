@@ -22,6 +22,8 @@ class PerformanceMetrics():
                 usecols=["Date", "Name", "Value"]
             )
         )
+        return self.data
+        """
         self.data["Date"] = pd.to_datetime(self.data["Date"]).dt.date
         self.data["Asset"] = "FUNDO"
 
@@ -34,7 +36,7 @@ class PerformanceMetrics():
         # ADJUSTING OTHER PARAMS
         self.update_correspondence()
         self.returns_data = None
-
+        """
     def update_correspondence(self) -> None:
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
 
