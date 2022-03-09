@@ -99,8 +99,8 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
 
 # DOWNLOAD DATA - GENERAL
 def download_data(
-    first_date: List[int], last_date: List[int], 
-    asset: Union[str, List[str]] = "FUNDS", outpath: str = None
+    first_date: List[int], last_date: List[int],
+    asset: Union[str, List[str]] = "FUNDS", outpath: str = None,
 ) -> None:
     """General function to download supported data
     
@@ -114,7 +114,7 @@ def download_data(
     last_day = last_date[2] if len(last_date) == 3 else 5
 
     date_interval = [
-        datetime.date(first_date[0], first_date[1], first_day), 
+        datetime.date(first_date[0], first_date[1], first_day),
         datetime.date(last_date[0], last_date[1], last_day)
     ]
     
