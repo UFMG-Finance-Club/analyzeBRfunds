@@ -1,3 +1,4 @@
+from tkinter import NONE
 import pandas as pd
 import datetime
 from ..utils import DataDownload
@@ -37,7 +38,7 @@ class PerformanceMetrics():
     def update_correspondence(self) -> None:
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
 
-    def increment_with(self, inpath_bases: Dict[str, str]):
+    def increment_with(self, inpath_bases: Dict[str, str]) -> None:
         """Increment data with external sources
 
         :param inpath_bases: dict with path to external bases and its names
@@ -56,10 +57,10 @@ class PerformanceMetrics():
 
         # IF RETURN DATA WAS ALREADY CALCULATED, ASK TO UPDATE IT
         if self.returns_data:
-            self.get_returns()
+            self.get_returns(silent=True)
         self.update_correspondence()
 
-    def get_returns(self):
+    def get_returns(self, silent: bool = False) -> None:
         """Compute returns
 
         """
