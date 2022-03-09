@@ -6,7 +6,7 @@ from typing import List, Dict
 
 class PerformanceMetrics():
 
-    def __init__(self, inpath: str, first_date: List[int] = None, last_date: List[int] = None) -> None:
+    def __init__(self, inpath: str, first_date: List[int] = None, last_date: List[int] = None):
         """A class to evalute several financial metrics to funds' data.
         
         :param inpath: path with preprocessed data to read
