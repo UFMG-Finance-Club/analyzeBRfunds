@@ -10,8 +10,8 @@ class PerformanceMetrics():
         """A class to evalute several financial metrics to funds' data.
         
         :param inpath: path with preprocessed data to read
-        :param first_date: list with first year and month
-        :param last_date: list with last year and month
+        :param first_date: list with minimum date to filter by
+        :param last_date: list with maximum date to filter by
         """
 
         # READ FILES
@@ -25,9 +25,9 @@ class PerformanceMetrics():
 
         # FILTERING BY DATE
         if first_date:
-            self.data = self.data[self.data["Date"] >= datetime.date(first_date[0], first_date[1], 1)]
+            self.data = self.data[self.data["Date"] >= datetime.date(first_date[0], first_date[1], first_date[2])]
         if last_date:
-            self.data = self.data[self.data["Date"] <= datetime.date(last_date[0], last_date[1], 31)]
+            self.data = self.data[self.data["Date"] <= datetime.date(last_date[0], last_date[1], last_date[2])]
 
         # ADJUSTING OTHER PARAMS
         self.update_correspondence()
