@@ -4,6 +4,7 @@ import pandas_datareader as pdr
 import datetime
 import os
 from collections import OrderedDict
+import warnings
 from typing import List, Union
 
 def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
@@ -43,8 +44,11 @@ def download_funds(months_interval: List[datetime.date], outpath: str) -> List[s
     # DOWNLOAD FILES
 
     for i in range(len(input_file_names)):
-        r = requests.get(input_file_names[i], allow_redirects=True)
-        open(output_file_names[i], "wb").write(r.content)
+        if os.path.exists(output_file_names[i]):
+            warnings.warn(f"File {output_file_names[i]} skipped since already exists.")
+        else:
+            r = requests.get(input_file_names[i], allow_redirects=True)
+            open(output_file_names[i], "wb").write(r.content)
 
     return output_file_names
 
