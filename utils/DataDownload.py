@@ -4,6 +4,7 @@ import pandas_datareader as pdr
 import datetime
 import os
 from collections import OrderedDict
+import warnings
 from typing import List, Union
 
 def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
@@ -23,18 +24,26 @@ def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
     return list(months_download)
 
 # DOWNLOAD FUNDS DATA
-def download_funds(months_interval: List[datetime.date], outpath: str) -> List[str]:
+def download_funds(first_date: List[int], last_date: List[int], outpath: str) -> List[str]:
     """Download and write funds' data. Designed for downloading from CVM. It returns a list with names of the downloaded names, so you can
     use it as an argument in the preprocessing routine.  
 
-    :param months_interval: list with date objects of first and last month/year
+    :param first_date: list with first year and month
+    :param last_date: list with last year and month
     :param outpath: (local) path to save downloaded data
     """
 
     inpath_structure = "http://dados.cvm.gov.br/dados/FI/DOC/INF_DIARIO/DADOS/inf_diario_fi_"
 
     # GETTING ALL MONTHS IN THE INTERVAL
-    months_download = get_months_interval(months_interval)
+    months_interval = [
+        datetime.date(first_date[0], first_date[1], 1),
+        datetime.date(last_date[0], last_date[1], 1)
+    ]
+    if months_interval[0] == months_interval[1]:
+        months_download = [months_interval[0].strftime(r"%Y%m")]
+    else:
+        months_download = get_months_interval(months_interval)
 
     # GENERATING FILE NAMES
     input_file_names = [f"{inpath_structure}{d}.csv" for d in months_download]
@@ -95,33 +104,3 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
     data.to_csv(outpath, index=False)
     
     return data
-
-# DOWNLOAD DATA - GENERAL
-def download_data(
-    first_date: Union[datetime.date, List[int]], last_date: Union[datetime.date, List[int]], 
-    asset: str = "FUNDS", outpath: str = None
-) -> None:
-    """General function to download supported data
-    
-    :param first_date: list with first year and month
-    :param last_date: list with last year and month
-    :param asset: which asset data to download
-    :param outpath: (local) path to save downloaded data
-    """
-
-    date_interval = [first_date, last_date]
-
-    for i in range(2):
-        if isinstance(date_interval[i], list):
-            if len(date_interval[i]) < 3:
-                date_interval[i].append(1)
-            date_interval[i] = datetime.date(date_interval[i][0], date_interval[i][1], date_interval[i][2])
-    
-    if asset == "FUNDS":
-        return download_funds(date_interval, outpath)
-    elif asset == "IBOVESPA":
-        return download_ibov(date_interval, outpath)
-    elif asset == "RISK-FREE":
-        return download_riskfree(date_interval, outpath)
-    else:
-        raise Exception(f"No support for asset '{asset}'")
