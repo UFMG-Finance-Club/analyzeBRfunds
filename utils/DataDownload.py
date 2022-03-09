@@ -97,10 +97,7 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
     return data
 
 # DOWNLOAD DATA - GENERAL
-def download_data(
-    first_date: List[int], last_date: List[int],
-    asset: Union[str, List[str]] = "FUNDS", outpath: str = None,
-) -> None:
+def download_data(first_date: List[int], last_date: List[int], asset: str = "FUNDS", outpath: str = None) -> None:
     """General function to download supported data
     
     :param first_date: list with first year and month
