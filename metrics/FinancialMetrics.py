@@ -15,15 +15,8 @@ class PerformanceMetrics():
         """
 
         # READ FILES
-        self.data = (
-            pd.read_csv(
-                inpath,
-                names=["Name","Date", "VL_TOTAL", "Value", "VL_PATRIM_LIQ", "CAPTC_DIA", "RESG_DIA", "NR_COTST"],
-                usecols=["Date", "Name", "Value"]
-            )
-        )
-        
-        """
+        self.data = pd.read_csv(inpath, usecols=["DT_COMPTC", "CNPJ_FUNDO", "VL_QUOTA"])
+        self.data.columns = ["Date", "Name", "Value"]
         self.data["Date"] = pd.to_datetime(self.data["Date"]).dt.date
         self.data["Asset"] = "FUNDO"
 
@@ -36,7 +29,7 @@ class PerformanceMetrics():
         # ADJUSTING OTHER PARAMS
         self.update_correspondence()
         self.returns_data = None
-        """
+        
     def update_correspondence(self) -> None:
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
 
