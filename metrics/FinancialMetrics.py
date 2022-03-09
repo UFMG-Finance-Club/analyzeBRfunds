@@ -16,7 +16,7 @@ class PerformanceMetrics():
 
         # READ FILES
         self.data = pd.read_csv(
-            inpath, usecols=["CNPJ_FUNDO"", DT_COMPTC", "VL_QUOTA"], 
+            inpath, usecols=["CNPJ_FUNDO", "DT_COMPTC", "VL_QUOTA"], 
             dtype={"CNPJ_FUNDO" : str, "VL_QUOTA" : float}
         )
         self.data.columns = ["Name", "Date", "Value"]
