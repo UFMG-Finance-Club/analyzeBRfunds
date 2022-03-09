@@ -4,7 +4,6 @@ import pandas_datareader as pdr
 import datetime
 import os
 from collections import OrderedDict
-import warnings
 from typing import List, Union
 
 def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
