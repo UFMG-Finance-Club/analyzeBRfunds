@@ -105,17 +105,19 @@ def download_data(
     :param outpath: (local) path to save downloaded data
     """
 
-    correspondence_asset_function = {
-        "FUNDS" : download_funds,
-        "IBOVESPA" : download_ibov,
-        "RISK-FREE" : download_riskfree
-    }
+    first_day = first_date[2] if len(first_date) == 3 else 5
+    last_day = last_date[2] if len(last_date) == 3 else 5
 
-    first_day = first_date[2] if len(first_date) == 2 else 1
-    last_day = last_date[2] if len(last_date) == 2 else 1
     date_interval = [
         datetime.date(first_date[0], first_date[1], first_day), 
         datetime.date(last_date[0], last_date[1], last_day)
     ]
-
-    correspondence_asset_function[asset](date_interval, outpath)
+    
+    if asset == "FUNDS":
+        return download_funds(date_interval, outpath)
+    elif asset == "IBOVESPA":
+        return download_ibov(date_interval, outpath)
+    elif asset == "RISK-FREE":
+        return download_riskfree(date_interval, outpath)
+    else:
+        raise Exception(f"No support for asset '{asset}'")
