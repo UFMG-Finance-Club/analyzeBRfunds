@@ -1,4 +1,3 @@
-from tkinter import NONE
 import pandas as pd
 import datetime
 from ..utils import DataDownload
@@ -18,11 +17,12 @@ class PerformanceMetrics():
         # READ FILES
         self.data = (
             pd.read_csv(
-                inpath, parse_dates=["Date"],
+                inpath,
                 names=["Name","Date", "VL_TOTAL", "Value", "VL_PATRIM_LIQ", "CAPTC_DIA", "RESG_DIA", "NR_COTST"],
                 usecols=["Date", "Name", "Value"]
             )
         )
+        self.data["Date"] = pd.to_datetime(self.data["Date"]).dt.date
         self.data["Asset"] = "FUNDO"
 
         # FILTERING BY DATE
