@@ -15,8 +15,11 @@ class PerformanceMetrics():
         """
 
         # READ FILES
-        self.data = pd.read_csv(inpath, usecols=["DT_COMPTC", "CNPJ_FUNDO", "VL_QUOTA"])
-        self.data.columns = ["Date", "Name", "Value"]
+        self.data = pd.read_csv(
+            inpath, usecols=["CNPJ_FUNDO"", DT_COMPTC", "VL_QUOTA"], 
+            dtype={"CNPJ_FUNDO" : str, "VL_QUOTA" : float}
+        )
+        self.data.columns = ["Name", "Date", "Value"]
         self.data["Date"] = pd.to_datetime(self.data["Date"]).dt.date
         self.data["Asset"] = "FUNDO"
 
