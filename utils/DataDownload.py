@@ -4,7 +4,7 @@ import pandas_datareader as pdr
 import datetime
 import os
 from collections import OrderedDict
-from typing import List, Union
+from typing import List
 
 def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
     """Return list of months between a given interval. You should not need to evoke this directly.
