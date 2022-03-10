@@ -1,6 +1,6 @@
 import pandas as pd
 import datetime
-from ..utils import DataDownload
+from utils import DataDownload
 from typing import List, Dict
 
 
@@ -36,22 +36,27 @@ class PerformanceMetrics():
     def update_correspondence(self) -> None:
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
 
-    def increment_with(self, inpath_bases: Dict[str, str]) -> None:
+    def increment_with(self, target_base: str, outpath_base: str = None) -> None:
         """Increment data with external sources
 
-        :param inpath_bases: dict with path to external bases and its names
+        :param target_base: wheter 'IBOV' or 'RISK_FREE'
+        :param outpath_base: output to save base
         """
+        
+        date_interval = [min(self.data["Date"]), max(self.data["Date"])]
 
-        for name_base, path_base in inpath_bases.items():
-            
-            path_base = path_base if path_base else None
-
-            data_iter = DataDownload.download_data(
-                first_date=min(self.data["Date"]), last_date=max(self.data["Date"]),
-                asset=name_base, outpath=path_base
+        if target_base == "IBOV":
+            aditional_data = DataDownload.download_ibov(
+                date_interval=date_interval, outpath=outpath_base
             )
-            data_iter["Asset"] = name_base
-            self.data = pd.concat([self.data, data_iter])
+            aditional_data["Date"] = aditional_data["Date"].dt.date
+        elif target_base == "RISK_FREE":
+            aditional_data = DataDownload.download_riskfree(
+                date_interval=date_interval, outpath=outpath_base
+            )
+
+        aditional_data["Asset"] = target_base
+        self.data = pd.concat([self.data, aditional_data])
 
         # IF RETURN DATA WAS ALREADY CALCULATED, ASK TO UPDATE IT
         if self.returns_data:
@@ -65,11 +70,12 @@ class PerformanceMetrics():
         """
         self.returns_data = (
             self.data
-            .drop("Name", axis=1)
-            .pivot(index="Date", columns="Asset", values="Value")
-            .dropna(axis=1)
+            .drop("Asset", axis=1)
+            .pivot(index="Date", columns="Name", values="Value")
             .pct_change()
         )
 
         if not silent:
             return self.returns_data
+
+    def estimate_factor()
