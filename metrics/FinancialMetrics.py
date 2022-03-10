@@ -1,8 +1,9 @@
 import pandas as pd
 import datetime
 from utils import DataDownload
-from typing import List, Dict
-
+from typing import List, Union
+from scipy import stats
+import numpy as np
 
 class PerformanceMetrics():
 
@@ -31,7 +32,9 @@ class PerformanceMetrics():
 
         # ADJUSTING OTHER PARAMS
         self.update_correspondence()
-        self.returns_data = None
+        self.get_returns(silent=True)
+        self.alpha = None
+        self.beta = None
         
     def update_correspondence(self) -> None:
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
@@ -58,9 +61,7 @@ class PerformanceMetrics():
         aditional_data["Asset"] = target_base
         self.data = pd.concat([self.data, aditional_data])
 
-        # IF RETURN DATA WAS ALREADY CALCULATED, ASK TO UPDATE IT
-        if self.returns_data:
-            self.get_returns(silent=True)
+        self.get_returns(silent=True)
         self.update_correspondence()
 
     def get_returns(self, silent: bool = False) -> None:
@@ -78,4 +79,27 @@ class PerformanceMetrics():
         if not silent:
             return self.returns_data
 
-    def estimate_factor()
+    def estimate_factors(self, selected: Union[str, List[str]] = "all"):
+
+        if isinstance(selected, list) or selected in self.returns_data.columns:
+            data_factors = self.returns_data[selected + ["IBOV", "Risk_free"]]
+        elif selected == "all":
+            data_factors = self.returns_data.copy()
+        else:
+            raise Exception("Option not recognized or asset isn't on data.")
+        
+        data_factors["Market"] = data_factors["IBOV"] - data_factors["Risk_free"]
+        data_factors = data_factors.drop("IBOV", axis=1)
+
+        linear_reg_data = dict()
+
+        X = data_factors["Market"].to_numpy()
+        for fund in data_factors.columns:
+            
+            if fund not in ["Market", "Risk_free"]:
+                y = (data_factors[fund] - data_factors["Risk_free"]).to_numpy()
+                mask = ~np.isnan(X) & ~np.isnan(y)
+
+                linear_reg_data[fund] = stats.linregress(X[mask], y[mask])
+
+        return linear_reg_data
