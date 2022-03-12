@@ -1,20 +1,44 @@
 import dask.dataframe as dd
-import numpy as np
+
 import json
 from datetime import datetime
 import os
-from typing import List, Union, Callable, Dict
+
 import warnings
+from typing import List, Union, Dict
+from __future__ import annotations # allow typehinting of Preprocess
 
 class Preprocess:
+    """Preprocess brazilian funds' data.
+    
+    Atrributes:
+        type: if data is raw ('new') or already preprocessed ('existing')
+        inpath: path with data preprocessed/to be preprocessed
+        data: dask DataFrame with data being preprocessed
+        files_read: list of inpath files
+        info_status: dict with information of filters and merges applied,
+            to be written in a log file
+    """
 
-    def __init__(self, inpath: Union[str, List[str]] = None, data = None, type: str = "new", info_status: Dict = None):
+    def __init__(self, inpath: Union[str, List[str]] = None, data: dask.DataFrame = None, type: str = "new", info_status: Dict = None) -> None:
         """Initialize class for preprocessing.
+
+        Specify data or inpath data to be preprocessed.
         
-        :param inpath: path with raw/preprocessed file(s) to read
-        :param data: raw or preprocessed dask dataframe
-        :param type: whether data is raw ('new') or preprocessed ('existing')
-        :param status: content to write in log file  
+        Args:
+            inpath: path with raw/preprocessed file(s) to read.
+                It can be a directory (single string) or a list
+                of files.
+            data: raw or preprocessed dask dataframe. If both
+                data and inpath are specified then inpath is
+                ignored.
+            type: if data is raw ('new') or already preprocessed 
+                ('existing')
+            info_status: dictionary with content to write in 
+                log file. Most of the time it'll be specified
+                only internally, but it can be useful if data's
+                type is 'existing' and you wish to keep old
+                informations of preprocessing.
         """
 
         # CHECK IF TYPE IS OK
@@ -40,7 +64,6 @@ class Preprocess:
             self.inpath = inpath
 
             # READ FILES
-
             if (not isinstance(self.inpath, list)) and os.path.isfile(self.inpath):
                 self.inpath = [self.inpath]
 
@@ -70,6 +93,15 @@ class Preprocess:
             self.info_status = {"type" : self.type, "status" : "unmodified"}
 
     def update_status(self, kind: str, description: Union[str, Dict[str, List[float]]]) -> None:
+        """For internal use. Update preprocess informations.
+        
+        Args:
+            kind: preprocess action performed.
+            description: output path if kind is 'write',
+                merged base path if 'merge' and range and
+                column name's filters if kind is 'filters'. 
+        """
+
         if kind in self.info_status.keys():
             self.info_status[kind].append(description)
         else:
@@ -77,10 +109,16 @@ class Preprocess:
         
         self.info_status["status"] = "written" if kind == "write" else "modified"
 
-    def apply_merge(self, CNPJ_to_keep_path: str):
+    def apply_merge(self, CNPJ_to_keep_path: str) -> Preprocess:
         """Filter by specific CNPJs by merging with a CNPJ given base.
         
-        :param CNPJ_to_keep_path: path to csv data with CNPJs to keep  
+        Base to merge by is assumed to have a 'CNPJ_FUNDO' column with
+        desired CNPJs in string format (but just with numbers) and can
+        have additional columns which will also be included and must
+        be written in csv format in default specifications.
+
+        Args:
+            CNPJ_to_keep_path: path for data to be merged
         """    
 
         CNPJ_data_to_keep = (
@@ -93,10 +131,17 @@ class Preprocess:
         self.update_status(kind="merge", description=CNPJ_data_to_keep) 
         return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
 
-    def apply_filters(self, inrange_filters: List[Dict[str, List[float]]] = []):
-        """ Apply standard filters to data.
+    def apply_filters(self, inrange_filters: List[Dict[str, List[float]]] = []) -> Preprocess:
+        """Apply filters to data.
 
-        :param inrange_filters: list of dicts with inrange filters to apply. Format: {'column_to_filter' : [min_value, max_value]} 
+        Filters are stored in a dictionary, where key is the
+        column to apply the filter and value is a two-length list, 
+        indicating minimum and maximum values that column can have.
+        A list of filters is asked, and filters will be applied in
+        the order they are specified.
+
+        Args:
+            inrange_filters: list of filters.
         """
         CNPJs_to_keep = set()
 
@@ -126,11 +171,17 @@ class Preprocess:
         self.update_status(kind="filters", description=inrange_filters) 
         return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
 
-    def write(self, outpath: str = None, overwrite: bool = True):
-        """Write computations in disk
+    def write(self, outpath: str = None, overwrite: bool = True) -> Preprocess:
+        """Write computations in disk.
+
+        Output format is csv. An additional json file with
+        information of actions performed is also written in
+        the output file's directory.
         
-        :param outpath: path to the output data
-        :param overwrite: whether to overwrite existing preprocessed file in outpath
+        Args:
+            outpath: file path to the output data
+            overwrite: whether to overwrite existing preprocessed file
+                in outpath
         """
         if os.path.exists(outpath):
             if os.path.isdir(outpath):
@@ -156,14 +207,19 @@ class Preprocess:
         CNPJ_only_numbers: bool = True,
         CNPJ_to_keep_path: str = None,
         inrange_filters: List[Dict[str, List[float]]] = []
-    ):
+    ) -> Preprocess:
         """Format raw data.
 
-        :param outpath: path to the output data
-        :param overwrite: whether to overwrite existing preprocessed file in outpath
-        :param CNPJ_only_numbers: remove CNPJ special characters and keep only numbers
-        :param CNPJ_to_keep_path: path to csv data with CNPJs to keep 
-        :param inrange_filters: list of dicts with inrange filters to apply. Format: {'column_to_filter' : [min_value, max_value]} 
+        A general routine to apply standard transformations
+        to raw data (including writing in disk) without the
+        need to evoke each of the routines separetely.
+
+        Args:
+            outpath: path to the output data
+            overwrite: whether to overwrite existing preprocessed file in outpath
+            CNPJ_only_numbers: remove CNPJ special characters and keep only numbers
+            CNPJ_to_keep_path: path to csv data with CNPJs to keep 
+            inrange_filters: list of dicts with inrange filters to apply 
         """
 
         # CHECKING TYPE
