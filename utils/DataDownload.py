@@ -1,16 +1,23 @@
 import requests
-import pandas as pd
 import pandas_datareader as pdr
+
 import datetime
+import pandas as pd
 import os
 from collections import OrderedDict
+
 import warnings
-from typing import List, Union
+from typing import List
 
 def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
-    """Return list of months between a given interval. You should not need to evoke this directly.
+    """Return list of months between a given interval.
     
-    :param months_interval: interval of months to download data ([first_month, last_month])
+    Args:
+        months_interval: list with first and last dates. Day is ignored.
+    Returns:
+        A list of strings with months contained in the interval.
+        By default, interval is assumed to be inclusive by left
+        and exclusive by right. String format is '%Y%m'.
     """
 
     start_date, end_date = months_interval
@@ -25,12 +32,18 @@ def get_months_interval(months_interval: List[datetime.date]) -> List[str]:
 
 # DOWNLOAD FUNDS DATA
 def download_funds(first_date: List[int], last_date: List[int], outpath: str) -> List[str]:
-    """Download and write funds' data. Designed for downloading from CVM. It returns a list with names of the downloaded names, so you can
-    use it as an argument in the preprocessing routine.  
+    """Download and write funds' data.
+    
+    Designed for downloading from CVM public sources and 
+    writing in csv. Smaller unit of time to ask for 
+    downloading is the month. 
 
-    :param first_date: list with first year and month
-    :param last_date: list with last year and month
-    :param outpath: (local) path to save downloaded data
+    Args:
+        first_date: list with first year and month
+        last_date: list with last year and month
+        outpath: directory path to save downloaded data
+    Returns:
+        A list of the output paths of downloaded data.
     """
 
     inpath_structure = "http://dados.cvm.gov.br/dados/FI/DOC/INF_DIARIO/DADOS/inf_diario_fi_"
@@ -64,16 +77,22 @@ def download_funds(first_date: List[int], last_date: List[int], outpath: str) ->
 def download_ibov(date_interval: List[datetime.date], outpath: str = None) -> pd.DataFrame:
     """Download IBOV data from Yahoo Finance
     
-    :param date_interval: date interval to download data
-    :param outpath: optional outpath to write data
+    Args:
+        date_interval: list of datetime objects with first
+            and last date of desired data.
+        outpath: optional file outpath to write downloaded
+            data in csv.
+    Returns:
+        A Pandas DataFrame with downloaded data.
     """
 
     data = (
         pdr.data.DataReader("^BVSP", data_source="yahoo", start=date_interval[0], end=date_interval[1])
         .reset_index()
-    )[["Date", "Adj Close"]]
-    data.columns = ["Date", "Value"]
-    data["Name"] = "IBOV"
+        .loc[:, ["Date", "Adj Close"]]
+        .rename({"Adj Close": "Value"}, axis=1)
+        .assign(Name="IBOV")
+    )
     data = data[["Date", "Name", "Value"]]
 
     if outpath:
@@ -85,8 +104,12 @@ def download_ibov(date_interval: List[datetime.date], outpath: str = None) -> pd
 def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.DataFrame:
     """Download Risk Free data (30-day DI swap) from NEFIN
 
-    :param date_interval: date interval to download data
-    :param outpath: outpath to write data   
+    Args:
+        date_interval: list of datetime objects with first
+            and last date of desired data.
+        outpath: file outpath to write downloaded data in csv.
+    Returns:
+        A Pandas DataFrame with downloaded data.
     """
 
     r = requests.get("https://nefin.com.br/resources/risk_factors/Risk_Free.xls", allow_redirects=True)
@@ -94,13 +117,15 @@ def download_riskfree(date_interval: List[datetime.date], outpath: str) -> pd.Da
     open(outpath_xls, "wb").write(r.content)
 
     data = pd.read_excel(outpath_xls, dtype={"year" : str, "month" : str, "day" : str})
-    
     data["Date"] = pd.to_datetime(data["year"] + "/" + data["month"] + "/" + data["day"]).dt.date
-    data = data[["Date", "Risk_free"]]
-    data.columns = ["Date", "Value"]
-    data["Name"] = "Risk_free"
+    data = (
+        data
+        .loc[:, ["Date", "Risk_free"]]
+        .rename({"Risk_free": "Value"}, axis=1)
+        .assign(Name="Risk_free")
+    )
     data = data[["Date", "Name", "Value"]]
     data = data[data["Date"].between(date_interval[0], date_interval[1], inclusive="both")]
     data.to_csv(outpath, index=False)
-    
+
     return data
