@@ -1,18 +1,34 @@
 import pandas as pd
+
 import datetime
 from utils import DataDownload
-from typing import List, Union
 from scipy import stats
 import numpy as np
 
+from typing import List, Union
+
 class PerformanceMetrics():
+    """A class to evalute several financial metrics to funds' data.
+    
+    While it is possible to use raw data here, it is recommended you
+    preprocess it before and reduce amount of CNPJs considered to the
+    minimum possible.
+    
+    Attributes:
+        data: Pandas DataFrame with data being used
+        correspondence: Pandas DataFrame with assets (categorized) 
+            being used  
+    """
 
     def __init__(self, inpath: str, first_date: List[int] = None, last_date: List[int] = None) -> None:
-        """A class to evalute several financial metrics to funds' data.
+        """Initialize class. Read inpath files.
         
-        :param inpath: path with preprocessed data to read
-        :param first_date: list with minimum date to filter by
-        :param last_date: list with maximum date to filter by
+        Args:
+            inpath: path with data to read
+            first_date: optional integer list with minimum date to 
+                filter by. Format is [year, month, day].
+            last_date: optional list with maximum date to filter by.
+                Format is [year, month, day].
         """
 
         # READ FILES
@@ -33,17 +49,20 @@ class PerformanceMetrics():
         # ADJUSTING OTHER PARAMS
         self.update_correspondence()
         self.get_returns(silent=True)
-        self.alpha = None
-        self.beta = None
         
     def update_correspondence(self) -> None:
+        """Update correspondece attribute."""
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
 
     def increment_with(self, target_base: str, outpath_base: str = None) -> None:
-        """Increment data with external sources
+        """Increment data with external sources.
 
-        :param target_base: wheter 'IBOV' or 'RISK_FREE'
-        :param outpath_base: output to save base
+        Data is re-downloaded even if it exists. Routines
+        used for downloading are from utils/DataDownload.
+
+        Args:
+            target_base: wheter 'IBOV' or 'RISK_FREE'
+            outpath_base: output to save base
         """
         
         date_interval = [min(self.data["Date"]), max(self.data["Date"])]
@@ -67,7 +86,8 @@ class PerformanceMetrics():
     def get_returns(self, silent: bool = False) -> None:
         """Compute returns
 
-        :param silent: whether to return data
+        Args:
+            silent: whether to return data
         """
         self.returns_data = (
             self.data
@@ -80,6 +100,17 @@ class PerformanceMetrics():
             return self.returns_data
 
     def estimate_factors(self, selected: Union[str, List[str]] = "all"):
+        """Estimate alphas and betas from the one-factor model.
+        
+        Risk free and market data need to be on funds' data. They can
+        be included via *increment_with* method. To estimate beta and
+        alpha, we use Ordinary Least Squared (OLS) in a simple
+        regression where excess market returns are the preditor and
+        excess funds' returns are the predictable variable.
+
+        Args:
+            selected: list of selected CNPJs to evalute this metric. 
+        """
 
         if isinstance(selected, list) or selected in self.returns_data.columns:
             data_factors = self.returns_data[selected + ["IBOV", "Risk_free"]]
