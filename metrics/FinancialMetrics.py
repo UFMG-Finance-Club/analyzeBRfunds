@@ -5,7 +5,7 @@ from utils import DataDownload
 from scipy import stats
 import numpy as np
 
-from typing import List, Union
+from typing import List, Union, Optional
 
 class PerformanceMetrics():
     """A class to evalute several financial metrics to funds' data.
@@ -51,7 +51,6 @@ class PerformanceMetrics():
         self.get_returns(silent=True)
         
     def update_correspondence(self) -> None:
-        """Update correspondece attribute."""
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
 
     def increment_with(self, target_base: str, outpath_base: str = None) -> None:
@@ -83,7 +82,7 @@ class PerformanceMetrics():
         self.get_returns(silent=True)
         self.update_correspondence()
 
-    def get_returns(self, silent: bool = False) -> None:
+    def get_returns(self, silent: bool = False) -> Optional[pd.DataFrame]:
         """Compute returns
 
         Args:
