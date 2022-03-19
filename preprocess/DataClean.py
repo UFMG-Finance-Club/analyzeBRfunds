@@ -67,32 +67,39 @@ class Preprocess:
         elif inpath:
             self.inpath = inpath
 
-            # READ FILES
-            if (not isinstance(self.inpath, list)) and os.path.isfile(self.inpath):
-                self.inpath = [self.inpath]
+            if self.type == "new":
+                # READ FILES
+                if (not isinstance(self.inpath, list)) and os.path.isfile(self.inpath):
+                    self.inpath = [self.inpath]
 
-            # CASE 1: IT'S A LIST (ASSUMED LIST OF FILES)
-            if isinstance(self.inpath, list):
+                # CASE 1: IT'S A LIST (ASSUMED LIST OF FILES)
+                if isinstance(self.inpath, list):
 
-                if len(list(filter(os.path.isfile, self.inpath))) != len(self.inpath):
-                    raise Exception("Can't pass a list of directories. Pass a single string instead.")
-                else:    
-                    filenames_inpath = [os.path.basename(fn)[:-4] for fn in self.inpath]
+                    if len(list(filter(os.path.isfile, self.inpath))) != len(self.inpath):
+                        raise Exception("Can't pass a list of directories. Pass a single string instead.")
+                    else:    
+                        filenames_inpath = [os.path.basename(fn)[:-4] for fn in self.inpath]
 
-            # CASE 2: IT'S A SINGLE STRING (ASSUMING DIRECTORY PATH)
+                # CASE 2: IT'S A SINGLE STRING (ASSUMING DIRECTORY PATH)
+                else:
+                    filenames_inpath = list(filter(
+                        lambda x: os.path.isfile(os.path.join(self.inpath, x)) and x[-4:] == ".csv",
+                        os.listdir(self.inpath)
+                    ))
+                    filenames_inpath = [fn[:-4] for fn in filenames_inpath]
+                    self.inpath = os.path.join(self.inpath, "*.csv")
+
+                columns_to_read = ['CNPJ_FUNDO', 'DT_COMPTC', 'VL_TOTAL', 'VL_QUOTA', 'VL_PATRIM_LIQ', 'CAPTC_DIA', 'RESG_DIA', 'NR_COTST']
+
+                self.data = dd.read_csv(self.inpath, sep=";", usecols=columns_to_read, dtype={"CNPJ_FUNDO" : str})
+                self.files_read = filenames_inpath
             else:
-                filenames_inpath = list(filter(
-                    lambda x: os.path.isfile(os.path.join(self.inpath, x)) and x[-4:] == ".csv",
-                    os.listdir(self.inpath)
-                ))
-                filenames_inpath = [fn[:-4] for fn in filenames_inpath]
-                self.inpath = os.path.join(self.inpath, "*.csv")
+                if not os.path.isfile(self.inpath):
+                    raise Exception(f"If type is 'existing', {self.inpath} should be a file.")
+                else:
+                    self.data = dd.read_csv(self.inpath, sep=",", dtype={"CNPJ_FUNDO" : str})
+                    self.files_read = self.inpath
 
-            columns_to_read = ['CNPJ_FUNDO', 'DT_COMPTC', 'VL_TOTAL', 'VL_QUOTA', 'VL_PATRIM_LIQ', 'CAPTC_DIA', 'RESG_DIA', 'NR_COTST']
-
-            self.data = dd.read_csv(self.inpath, sep=";", usecols=columns_to_read, dtype={"CNPJ_FUNDO" : str})
-            self.files_read = filenames_inpath
-        
         if not info_status:
             self.info_status = {"type" : self.type, "status" : "unmodified"}
 
