@@ -1,4 +1,4 @@
-from __future__ import annotations # allow typehinting of Preprocess
+from __future__ import annotations  # allow typehinting of Preprocess
 
 import dask.dataframe as dd
 import json
@@ -6,11 +6,12 @@ from datetime import datetime
 import os
 
 import warnings
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
+
 
 class Preprocess:
     """Preprocess brazilian funds' data.
-    
+
     Atrributes:
         type: if data is raw ('new') or already preprocessed ('existing')
         inpath: path with data preprocessed/to be preprocessed
@@ -20,7 +21,10 @@ class Preprocess:
             to be written in a log file
     """
 
-    def __init__(self, inpath: Union[str, List[str]] = None, data: dask.DataFrame = None, type: str = "new", info_status: Dict = None) -> None:
+    def __init__(
+        self, inpath: Optional[Union[str, List[str]]] = None, data: Optional[dask.DataFrame] = None, 
+        type: str = "new", info_status: Optional[Dict] = None
+    ) -> None:
         """Initialize class for preprocessing.
 
         Specify data or inpath data to be preprocessed.
@@ -171,7 +175,7 @@ class Preprocess:
         self.update_status(kind="filters", description=inrange_filters) 
         return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
 
-    def write(self, outpath: str = None, overwrite: bool = True) -> Preprocess:
+    def write(self, outpath: Optional[str] = None, overwrite: bool = True) -> Preprocess:
         """Write computations in disk.
 
         Output format is csv. An additional json file with
@@ -203,9 +207,9 @@ class Preprocess:
 
     def format_new_data(
         self,
-        outpath: str = None, overwrite: bool = True,
+        outpath: Optional[str] = None, overwrite: bool = True,
         CNPJ_only_numbers: bool = True,
-        CNPJ_to_keep_path: str = None,
+        CNPJ_to_keep_path: Optional[str] = None,
         inrange_filters: List[Dict[str, List[float]]] = []
     ) -> Preprocess:
         """Format raw data.
