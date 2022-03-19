@@ -1,12 +1,12 @@
-import dask.dataframe as dd
+from __future__ import annotations # allow typehinting of Preprocess
 
+import dask.dataframe as dd
 import json
 from datetime import datetime
 import os
 
 import warnings
 from typing import List, Union, Dict
-from __future__ import annotations # allow typehinting of Preprocess
 
 class Preprocess:
     """Preprocess brazilian funds' data.
@@ -169,7 +169,7 @@ class Preprocess:
         self.data = self.data[self.data["CNPJ_FUNDO"].isin(CNPJs_to_keep)]
         
         self.update_status(kind="filters", description=inrange_filters) 
-        return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
+        return Preprocess(data=self.data, type=self.type, info_statuode s=self.info_status)
 
     def write(self, outpath: str = None, overwrite: bool = True) -> Preprocess:
         """Write computations in disk.

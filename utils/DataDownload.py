@@ -46,7 +46,9 @@ def download_funds(first_date: List[int], last_date: List[int], outpath: str) ->
         A list of the output paths of downloaded data.
     """
 
-    inpath_structure = "http://dados.cvm.gov.br/dados/FI/DOC/INF_DIARIO/DADOS/inf_diario_fi_"
+    # CHECKING OUTPATH
+    if not os.path.isdir(outpath):
+        raise Exception(f"{outpath} is not a directory.")
 
     # GETTING ALL MONTHS IN THE INTERVAL
     months_interval = [
@@ -59,6 +61,8 @@ def download_funds(first_date: List[int], last_date: List[int], outpath: str) ->
         months_download = get_months_interval(months_interval)
 
     # GENERATING FILE NAMES
+    inpath_structure = "http://dados.cvm.gov.br/dados/FI/DOC/INF_DIARIO/DADOS/inf_diario_fi_"
+
     input_file_names = [f"{inpath_structure}{d}.csv" for d in months_download]
     output_file_names = [os.path.join(outpath, f"{d}.csv") for d in months_download]
 
