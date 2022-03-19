@@ -131,7 +131,7 @@ class Preprocess:
             .repartition(npartitions=1)
         )
 
-        self.data = self.data.merge(CNPJ_data_to_keep, how="right")
+        self.data = self.data.merge(CNPJ_data_to_keep, on="CNPJ_FUNDO", how="right")
         
         self.update_status(kind="merge", description=CNPJ_data_to_keep) 
         return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
@@ -238,7 +238,7 @@ class Preprocess:
 
         # CNPJ DATA TO KEEP
         if CNPJ_to_keep_path:
-            self.apply_merge(CNPJ_to_keep_path)
+            self.apply_merge(CNPJ_to_keep_path, sep=sep)
 
         # INRANGE FILTERS:
         if inrange_filters:
