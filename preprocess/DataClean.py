@@ -97,7 +97,7 @@ class Preprocess:
                 if not os.path.isfile(self.inpath):
                     raise Exception(f"If type is 'existing', {self.inpath} should be a file.")
                 else:
-                    self.data = dd.read_csv(self.inpath, sep=",", dtype={"CNPJ_FUNDO" : str})
+                    self.data = dd.read_csv(self.inpath, sep=",", assume_missing=True, dtype={"CNPJ_FUNDO" : str})
                     self.files_read = self.inpath
 
         if not info_status:
