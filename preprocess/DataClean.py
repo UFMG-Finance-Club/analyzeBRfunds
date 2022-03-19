@@ -169,7 +169,7 @@ class Preprocess:
         self.data = self.data[self.data["CNPJ_FUNDO"].isin(CNPJs_to_keep)]
         
         self.update_status(kind="filters", description=inrange_filters) 
-        return Preprocess(data=self.data, type=self.type, info_statuode s=self.info_status)
+        return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
 
     def write(self, outpath: str = None, overwrite: bool = True) -> Preprocess:
         """Write computations in disk.
