@@ -131,7 +131,7 @@ class Preprocess:
             .repartition(npartitions=1)
         )
 
-        self.data = self.data.merge(CNPJ_data_to_keep, how="right", on="CNPJ_FUNDO")
+        self.data = self.data.merge(CNPJ_data_to_keep, how="right")
         
         self.update_status(kind="merge", description=CNPJ_data_to_keep) 
         return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
