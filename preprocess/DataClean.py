@@ -113,7 +113,7 @@ class Preprocess:
         
         self.info_status["status"] = "written" if kind == "write" else "modified"
 
-    def apply_merge(self, CNPJ_to_keep_path: str) -> Preprocess:
+    def apply_merge(self, CNPJ_to_keep_path: str, sep: str = ",") -> Preprocess:
         """Filter by specific CNPJs by merging with a CNPJ given base.
         
         Base to merge by is assumed to have a 'CNPJ_FUNDO' column with
@@ -123,10 +123,11 @@ class Preprocess:
 
         Args:
             CNPJ_to_keep_path: path for data to be merged
+            sep: csv separator of the base
         """    
 
         CNPJ_data_to_keep = (
-            dd.read_csv(CNPJ_to_keep_path)
+            dd.read_csv(CNPJ_to_keep_path, sep=sep)
             .repartition(npartitions=1)
         )
 
@@ -209,7 +210,7 @@ class Preprocess:
         self,
         outpath: Optional[str] = None, overwrite: bool = True,
         CNPJ_only_numbers: bool = True,
-        CNPJ_to_keep_path: Optional[str] = None,
+        CNPJ_to_keep_path: Optional[str] = None, sep: str = ",",
         inrange_filters: List[Dict[str, List[float]]] = []
     ) -> Preprocess:
         """Format raw data.
@@ -222,7 +223,8 @@ class Preprocess:
             outpath: path to the output data
             overwrite: whether to overwrite existing preprocessed file in outpath
             CNPJ_only_numbers: remove CNPJ special characters and keep only numbers
-            CNPJ_to_keep_path: path to csv data with CNPJs to keep 
+            CNPJ_to_keep_path: path to csv data with CNPJs to keep
+            sep: csv separator of the base to merge with
             inrange_filters: list of dicts with inrange filters to apply 
         """
 
