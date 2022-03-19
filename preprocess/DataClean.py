@@ -90,7 +90,7 @@ class Preprocess:
 
             columns_to_read = ['CNPJ_FUNDO', 'DT_COMPTC', 'VL_TOTAL', 'VL_QUOTA', 'VL_PATRIM_LIQ', 'CAPTC_DIA', 'RESG_DIA', 'NR_COTST']
 
-            self.data = dd.read_csv(self.inpath, sep=";", usecols=columns_to_read)
+            self.data = dd.read_csv(self.inpath, sep=";", usecols=columns_to_read, dtype={"CNPJ_FUNDO" : str})
             self.files_read = filenames_inpath
         
         if not info_status:
@@ -127,11 +127,11 @@ class Preprocess:
         """    
 
         CNPJ_data_to_keep = (
-            dd.read_csv(CNPJ_to_keep_path, sep=sep)
+            dd.read_csv(CNPJ_to_keep_path, sep=sep, dtype={"CNPJ_FUNDO" : str})
             .repartition(npartitions=1)
         )
 
-        self.data = self.data.merge(CNPJ_data_to_keep, how="left", on="CNPJ_FUNDO")
+        self.data = self.data.merge(CNPJ_data_to_keep, how="right", on="CNPJ_FUNDO")
         
         self.update_status(kind="merge", description=CNPJ_data_to_keep) 
         return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
