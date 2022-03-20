@@ -20,11 +20,12 @@ class PerformanceMetrics():
             being used  
     """
 
-    def __init__(self, inpath: str, first_date: List[int] = None, last_date: List[int] = None) -> None:
+    def __init__(self, inpath: str, id_col: str = "CNPJ_FUNDO", first_date: List[int] = None, last_date: List[int] = None) -> None:
         """Initialize class. Read inpath files.
         
         Args:
             inpath: path with data to read
+            id_col: column to use as fund identifier
             first_date: optional integer list with minimum date to 
                 filter by. Format is [year, month, day].
             last_date: optional list with maximum date to filter by.
@@ -33,10 +34,11 @@ class PerformanceMetrics():
 
         # READ FILES
         self.data = pd.read_csv(
-            inpath, usecols=["CNPJ_FUNDO", "DT_COMPTC", "VL_QUOTA"], 
-            dtype={"CNPJ_FUNDO" : str, "VL_QUOTA" : float}
+            inpath, usecols=[id_col, "DT_COMPTC", "VL_QUOTA"], 
+            dtype={id_col : str, "VL_QUOTA" : float}
         )
-        self.data.columns = ["Name", "Date", "Value"]
+        
+        self.data = self.data.rename({"DT_COMPTC" : "Date", "VL_QUOTA" : "Value", id_col : "Name"}, axis=1)
         self.data["Date"] = pd.to_datetime(self.data["Date"]).dt.date
         self.data["Asset"] = "FUNDO"
 
@@ -121,7 +123,7 @@ class PerformanceMetrics():
         data_factors["Market"] = data_factors["IBOV"] - data_factors["Risk_free"]
         data_factors = data_factors.drop("IBOV", axis=1)
 
-        linear_reg_data = dict()
+        linear_reg_data = {"Fund" : [], "Alpha" : [], "Beta" : [], "R_squared" : [], "Pvalue" : []}
 
         X = data_factors["Market"].to_numpy()
         for fund in data_factors.columns:
@@ -130,6 +132,11 @@ class PerformanceMetrics():
                 y = (data_factors[fund] - data_factors["Risk_free"]).to_numpy()
                 mask = ~np.isnan(X) & ~np.isnan(y)
 
-                linear_reg_data[fund] = stats.linregress(X[mask], y[mask])
+                lin_reg_obj = stats.linregress(X[mask], y[mask])
+                linear_reg_data["Fund"].append(fund)
+                linear_reg_data["Alpha"].append(lin_reg_obj.intercept)
+                linear_reg_data["Beta"].append(lin_reg_obj.slope)
+                linear_reg_data["R_squared"].append(lin_reg_obj.rvalue ** 2)
+                linear_reg_data["Pvalue"].append(lin_reg_obj.pvalue)
 
-        return linear_reg_data
+        return pd.DataFrame.from_dict(linear_reg_data)
