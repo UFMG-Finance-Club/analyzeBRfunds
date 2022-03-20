@@ -1,11 +1,11 @@
 # analyzeBRfunds
 Get, manipulate and analyze data on Brazilian investment funds.
 
-We provide three main modules, **utils.DataDownload**, **preprocess.DataClean** e **metrics.FinancialMetrics**, aimed to download Brazilian funds data (and auxiliary data such as Brazilian risk-free asset or Ibovespa daily prices), apply some basic and general transformations and extract metrics such as return or alphas and betas, respectively. Behind the scenes, [Dask](https://docs.dask.org/en/stable/) is used in **preprocess.DataClean** and [Pandas](https://pandas.pydata.org/) in **metrics.FinancialMetrics**, so further transformations in data, in any of the steps, can be easily applied using these modules without the need to re-read the files.
+We provide three main modules, **utils.DataDownload**, **preprocess.DataClean** e **metrics.FinancialMetrics**, aimed to download Brazilian funds data (and auxiliary data such as Brazilian risk-free asset or Ibovespa daily prices), apply some basic and general transformations and extract metrics such as return or alphas and betas, respectively. Behind the scenes, [Dask](https://docs.dask.org/en/stable/) is used in **preprocess.DataClean** and [Pandas](https://pandas.pydata.org/) in **metrics.FinancialMetrics**, so further transformations in data, in any of the steps, can be easily applied using these libraries without the need to re-read the files.
 
 We recognize data wrangling is an extremely flexible activity, and by no means we intend to provide a general framework to all the most frequent tasks one does when dealing with funds (and financial, in general) data. Indeed, we just introduce some very basic wrappers, developed in a particular context (presented in this notebook) where they were quite useful, and actually can still be for an external user, but it's obviously expected one can -- and should -- persist in data exploration with another Dask/Pandas/etc resources. 
 
-As of March 2022, this code is highly experimental and should be used with cautious in a production environment. 
+As of March 2022, this code is experimental and should be used with cautious in a production environment. 
 
 ## Usage
 
@@ -61,12 +61,12 @@ prep_obj = (
 ```
 
 Generated data can be accessed via *data* attribute:
-```
+```python
 prep_obj.data
 ```
 A Dask Data-Frame is returned. This is lazy [evaluated], but you can compute its values via *compute* method. Of course we can also write the content in a file:
 
-```
+```python
 prep_obj.write(outpath="data/preprocess/2017_2021.csv")
 ```
 
@@ -86,13 +86,13 @@ fin_metrics = (
 ```
 Note we asked identifier column to be the fund name (default is CNPJ). We can easily get returns:
 
-```
+```python
 fin_metrics.get_returns()
 ```
 
 And increment data with Risk-Free and IBOV daily closing (or adjusted) prices. Risk-free is from [NEFIN](https://nefin.com.br/resources/risk_factors/Risk_Free.xls), IBOVESPA from Yahoo Finance.
 
-```
+```python
 fin_metrics.increment_with("IBOV")
 fin_metrics.increment_with("RISK_FREE", outpath_base="data/auxiliary/risk_free.csv")
 ```
