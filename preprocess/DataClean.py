@@ -17,8 +17,6 @@ class Preprocess:
         inpath: path with data preprocessed/to be preprocessed
         data: dask DataFrame with data being preprocessed
         files_read: list of inpath files
-        info_status: dict with information of filters and merges applied,
-            to be written in a log file
     """
 
     def __init__(
@@ -38,11 +36,6 @@ class Preprocess:
                 ignored.
             type: if data is raw ('new') or already preprocessed 
                 ('existing')
-            info_status: dictionary with content to write in 
-                log file. Most of the time it'll be specified
-                only internally, but it can be useful if data's
-                type is 'existing' and you wish to keep old
-                informations of preprocessing.
         """
 
         # CHECK IF TYPE IS OK
@@ -100,26 +93,6 @@ class Preprocess:
                     self.data = dd.read_csv(self.inpath, sep=",", assume_missing=True, dtype={"CNPJ_FUNDO" : str})
                     self.files_read = self.inpath
 
-        if not info_status:
-            self.info_status = {"type" : self.type, "status" : "unmodified"}
-
-    def update_status(self, kind: str, description: Union[str, Dict[str, List[float]]]) -> None:
-        """For internal use. Update preprocess informations.
-        
-        Args:
-            kind: preprocess action performed.
-            description: output path if kind is 'write',
-                merged base path if 'merge' and range and
-                column name's filters if kind is 'filters'. 
-        """
-
-        if kind in self.info_status.keys():
-            self.info_status[kind].append(description)
-        else:
-            self.info_status[kind] = description
-        
-        self.info_status["status"] = "written" if kind == "write" else "modified"
-
     def apply_merge(self, CNPJ_to_keep_path: str, sep: str = ",") -> Preprocess:
         """Filter by specific CNPJs by merging with a CNPJ given base.
         
@@ -139,9 +112,8 @@ class Preprocess:
         )
 
         self.data = self.data.merge(CNPJ_data_to_keep, on="CNPJ_FUNDO", how="right")
-        
-        self.update_status(kind="merge", description=CNPJ_data_to_keep) 
-        return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
+
+        return Preprocess(data=self.data, type=self.type)
 
     def apply_filters(self, inrange_filters: List[Dict[str, List[float]]] = []) -> Preprocess:
         """Apply filters to data.
@@ -179,9 +151,8 @@ class Preprocess:
 
         CNPJs_to_keep = list(CNPJs_to_keep)
         self.data = self.data[self.data["CNPJ_FUNDO"].isin(CNPJs_to_keep)]
-        
-        self.update_status(kind="filters", description=inrange_filters) 
-        return Preprocess(data=self.data, type=self.type, info_status=self.info_status)
+
+        return Preprocess(data=self.data, type=self.type)
 
     def write(self, outpath: Optional[str] = None, overwrite: bool = True) -> Preprocess:
         """Write computations in disk.
@@ -204,14 +175,7 @@ class Preprocess:
         # WRITING FILE  
         self.data.to_csv(outpath, single_file=True, index=False)
 
-        self.update_status(kind="write", description=datetime.now()) 
-
-        # WRITING LOG FILE
-        logfile_name = os.path.basename(outpath)[:-4] + "_log.json"
-        with open(logfile_name, 'w') as out_logfile:
-            json.dump(self.info_status, out_logfile, default=str)
-
-        return Preprocess(data=self.data, type=self.type, info_status=self.update_status)
+        return Preprocess(data=self.data, type=self.type)
 
     def format_new_data(
         self,
