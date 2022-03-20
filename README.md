@@ -65,4 +65,57 @@ prep_obj = (
 )
 ```
 
-Generated data can be accessed via 
+Generated data can be accessed via *data* attribute:
+```
+prep_obj.data
+```
+A Dask Data-Frame is returned. This is lazy [evaluated], but you can compute its values via *compute* method. Of course we can also write the content in a file:
+
+```
+prep_obj.write(outpath="data/preprocess/2017_2021.csv")
+```
+
+### FinancialMetrics
+
+This creates a PerformanceMetrics object:
+
+```python
+from metrics import FinancialMetrics
+
+fin_metrics = (
+    FinancialMetrics.PerformanceMetrics(
+        inpath="data/preprocess/2017_2021.csv",
+        id_col="NOME_FUNDO", first_date=[2018,1,1], last_date=[2021,12,30]
+    )
+)
+```
+Note we asked identifier column to be the fund name (default is CNPJ). We can easily get returns:
+
+```
+fin_metrics.get_returns()
+```
+
+And increment data with Risk-Free and IBOV daily closing (or adjusted) prices. Risk-free is from [NEFIN](https://nefin.com.br/resources/risk_factors/Risk_Free.xls), IBOVESPA from Yahoo Finance.
+
+```
+fin_metrics.increment_with("IBOV")
+fin_metrics.increment_with("RISK_FREE", outpath_base="data/auxiliary/risk_free.csv")
+```
+
+Let us estimate alphas and betas for the top 10% performing funds (criterium: best cumulative return in this period). Estimation follows the general procedure: OLS in a Linear Regression where excess returns are predicted and excess market returns are the predictor.
+
+```python
+from math import floor
+
+cumulative_returns = (fin_metrics.returns_data + 1).cumprod() - 1
+
+funds_to_estimate = (
+    cumulative_returns
+    .iloc[-1]
+    .sort_values(ascending=False)
+)
+funds_to_estimate = funds_to_estimate.iloc[:floor(.1 * len(funds_to_estimate))].index.values
+
+fin_metrics.estimate_factors(selected=list(funds_to_estimate))
+```
+This returns a Pandas DataFrame with *alpha* and *beta* coefficients, R² and p-value.
