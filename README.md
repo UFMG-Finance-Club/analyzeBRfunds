@@ -25,12 +25,7 @@ Funds data, while recorded in a daily basis, is stored monthly, so this is the s
 ```python
 from analyzeBRfunds.utils import DataDownload
 
-(
-    DataDownload.download_funds(
-        first_date=[2017, 1], last_date=[2022, 1], 
-        outpath="data/raw"
-    )
-)
+DataDownload.download_funds(first_date=[2017, 1], last_date=[2022, 1], outpath="data/raw")
 ```
 
 ### DataClean
