@@ -86,7 +86,7 @@ class PerformanceMetrics():
 
         # ANNUALIZED RETURN
         days_number = len(self.returns_data) - 1
-        self.metrics_data["annualized_ret"] = (1 + self.metrics_data["cumulative_ret"])**((1/(days_number/252)) - 1)
+        self.metrics_data["annualized_ret"] = ((1 + self.metrics_data["cumulative_ret"])**(1/(days_number/252))) - 1
 
         # SHARPE
         if "Risk_free" in self.returns_data.columns:
