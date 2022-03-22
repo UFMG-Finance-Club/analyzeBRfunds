@@ -18,9 +18,13 @@ class PerformanceMetrics():
         data: Pandas DataFrame with data being used
         correspondence: Pandas DataFrame with assets (categorized) 
             being used  
+        returns_data: Pandas DataFrame with assets daily returns
+        cumulative_returns_data: Pandas DataFrame with assets 
+            daily cumulative returns
+        auto_compute: awhether to auto compute metrics.
     """
 
-    def __init__(self, inpath: str, id_col: str = "CNPJ_FUNDO", first_date: List[int] = None, last_date: List[int] = None) -> None:
+    def __init__(self, inpath: str, id_col: str = "CNPJ_FUNDO", first_date: List[int] = None, last_date: List[int] = None, auto_compute: bool = True) -> None:
         """Initialize class. Read inpath files.
         
         Args:
@@ -30,6 +34,9 @@ class PerformanceMetrics():
                 filter by. Format is [year, month, day].
             last_date: optional list with maximum date to filter by.
                 Format is [year, month, day].
+            auto_compute: whether to auto compute metrics. Disable
+                if this is a very large dataset and you don't need
+                (or want to compute them yourself) its metrics 
         """
 
         # READ FILES
@@ -48,12 +55,39 @@ class PerformanceMetrics():
         if last_date:
             self.data = self.data[self.data["Date"] <= datetime.date(last_date[0], last_date[1], last_date[2])]
 
-        # ADJUSTING OTHER PARAMS
-        self.update_correspondence()
-        self.get_returns(silent=True)
-        
-    def update_correspondence(self) -> None:
+        self.auto_compute = auto_compute
+        if self.auto_compute:
+            self.update()
+
+    def update(self) -> None:
         self.correspondence = self.data[["Asset", "Name"]].drop_duplicates()
+        self.update_metrics()
+
+    def update_metrics(self) -> None:
+        """Compute (update) returns, standard deviations and other statistics and metrics.
+        """
+        # RETURNS
+        self.returns_data = (
+            self.data
+            .drop("Asset", axis=1)
+            .pivot(index="Date", columns="Name", values="Value")
+            .pct_change()
+        )
+
+        # CUMULATIVE RETURNS
+        self.cumulative_returns_data = (self.returns_data + 1).cumprod() - 1
+
+        # STD DEV
+        self.metrics_data = self.returns_data.std().to_frame(name="std")
+        self.metrics_data["annualized_std"] = self.metrics_data["std"] * np.power(252, 1/2)
+
+        # CUMULATIVE RETURN
+        self.metrics_data["cumulative_ret"] = self.cumulative_returns_data.iloc[-1]
+
+        # SHARPE RATIO
+        days_number = len(self.returns_data) - 1
+        self.metrics_data["annualized_ret"] = (1 + self.metrics_data["cumulative_ret"])**((1/(days_number/252)) - 1)
+        self.metrics_data["Sharpe"] = self.metrics_data["annualized_ret"] - self.metrics_data.loc[]
 
     def increment_with(self, target_base: str, outpath_base: str = None) -> None:
         """Increment data with external sources.
@@ -81,24 +115,8 @@ class PerformanceMetrics():
         aditional_data["Asset"] = target_base
         self.data = pd.concat([self.data, aditional_data])
 
-        self.get_returns(silent=True)
-        self.update_correspondence()
-
-    def get_returns(self, silent: bool = False) -> Optional[pd.DataFrame]:
-        """Compute returns
-
-        Args:
-            silent: whether to return data
-        """
-        self.returns_data = (
-            self.data
-            .drop("Asset", axis=1)
-            .pivot(index="Date", columns="Name", values="Value")
-            .pct_change()
-        )
-
-        if not silent:
-            return self.returns_data
+        if self.auto_compute:
+            self.update()
 
     def estimate_factors(self, selected: Union[str, List[str]] = "all"):
         """Estimate alphas and betas from the one-factor model.
