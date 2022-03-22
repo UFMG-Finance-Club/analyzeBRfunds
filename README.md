@@ -96,6 +96,10 @@ And increment data with Risk-Free and IBOV daily closing (or adjusted) prices. R
 fin_metrics.increment_with("IBOV")
 fin_metrics.increment_with("RISK_FREE", outpath_base="data/auxiliary/risk_free.csv")
 ```
+We can also get some other interesting metrics, such as volatility, annualized return and Sharpe ratio.
+```python
+fin_metrics.metrics_data
+```
 
 Let us estimate alphas and betas for the top 10% performing funds (criterium: best cumulative return in this period). Estimation follows the general procedure: OLS in a Linear Regression where excess returns are predicted and excess market returns are the predictor.
 
