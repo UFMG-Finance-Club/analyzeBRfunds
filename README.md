@@ -106,7 +106,7 @@ Let us estimate alphas and betas for the top 10% performing funds (criterium: be
 ```python
 from math import floor
 
-cumulative_returns = (fin_metrics.returns_data + 1).cumprod() - 1
+cumulative_returns = fin_metrics.cumulative_returns_data
 
 funds_to_estimate = (
     cumulative_returns
