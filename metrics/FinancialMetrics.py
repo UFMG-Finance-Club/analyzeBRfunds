@@ -84,10 +84,14 @@ class PerformanceMetrics():
         # CUMULATIVE RETURN
         self.metrics_data["cumulative_ret"] = self.cumulative_returns_data.iloc[-1]
 
-        # SHARPE RATIO
+        # ANNUALIZED RETURN
         days_number = len(self.returns_data) - 1
         self.metrics_data["annualized_ret"] = (1 + self.metrics_data["cumulative_ret"])**((1/(days_number/252)) - 1)
-        self.metrics_data["Sharpe"] = self.metrics_data["annualized_ret"] - self.metrics_data.loc[]
+
+        # SHARPE
+        if "Risk_free" in self.returns_data.columns:
+            cumulative_rf = self.returns_data.loc[max(self.returns_data.index), "Risk_free"]
+            self.metrics_data["Sharpe"] = (self.metrics_data["annualized_ret"] - cumulative_rf)/self.metrics_data["annualized_std"]
 
     def increment_with(self, target_base: str, outpath_base: str = None) -> None:
         """Increment data with external sources.
