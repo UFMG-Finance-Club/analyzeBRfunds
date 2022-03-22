@@ -87,7 +87,7 @@ fin_metrics = (
 Note we asked identifier column to be the fund name (default is CNPJ). We can easily get returns:
 
 ```python
-fin_metrics.get_returns()
+fin_metrics.returns_data
 ```
 
 And increment data with Risk-Free and IBOV daily closing (or adjusted) prices. Risk-free is from [NEFIN](https://nefin.com.br/resources/risk_factors/Risk_Free.xls), IBOVESPA from Yahoo Finance.
