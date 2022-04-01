@@ -142,7 +142,7 @@ class PerformanceMetrics():
         else:
             raise Exception("Option not recognized or asset isn't on data.")
         
-        data_factors["Market"] = data_factors["IBOV"] - data_factors["Risk_free"]
+        data_factors.loc["Market"] = data_factors["IBOV"] - data_factors["Risk_free"]
         data_factors = data_factors.drop("IBOV", axis=1)
 
         linear_reg_data = {"Fund" : [], "Alpha" : [], "Beta" : [], "R_squared" : [], "Pvalue" : []}
