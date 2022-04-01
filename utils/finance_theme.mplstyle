@@ -18,7 +18,6 @@ axes.grid: True
 axes.grid.axis: y
 axes.titlesize: xx-large
 axes.titleweight: normal
-axes.titley: None
 
 axes.prop_cycle: cycler(color=['043E72', '006999', '0094A6', '00BC99', '86DF7F', 'F9F871'])
 
