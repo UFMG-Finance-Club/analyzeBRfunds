@@ -24,7 +24,7 @@ class PerformanceMetrics():
         auto_compute: awhether to auto compute metrics.
     """
 
-    def __init__(self, inpath: str, id_col: str = "CNPJ_FUNDO", first_date: List[int] = None, last_date: List[int] = None, auto_compute: bool = True) -> None:
+    def __init__(self, inpath: str, id_col: str = "CNPJ_FUNDO", first_date: List[int] = None, last_date: List[int] = None, auto_compute: bool = True):
         """Initialize class. Read inpath files.
         
         Args:
@@ -87,6 +87,12 @@ class PerformanceMetrics():
         # ANNUALIZED RETURN
         days_number = len(self.returns_data) - 1
         self.metrics_data["annualized_ret"] = ((1 + self.metrics_data["cumulative_ret"])**(1/(days_number/252))) - 1
+
+        # MAXIMUM DRAWDOWN
+        self.metrics_data["max_drawdown"] = (
+            ((1 + self.cumulative_returns_data.cummax()) / (1 + self.cumulative_returns_data) - 1)
+            .max()
+        )
 
         # SHARPE
         if "Risk_free" in self.returns_data.columns:
