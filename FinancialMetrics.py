@@ -4,6 +4,7 @@ import datetime
 import DataDownload
 from scipy import stats
 import numpy as np
+import warnings
 
 from typing import List, Union, Optional
 
@@ -112,21 +113,24 @@ class PerformanceMetrics():
         
         date_interval = [min(self.data["Date"]), max(self.data["Date"])]
 
-        if target_base == "IBOV":
-            aditional_data = DataDownload.download_ibov(
-                date_interval=date_interval, outpath=outpath_base
-            )
-            aditional_data["Date"] = aditional_data["Date"].dt.date
-        elif target_base == "RISK_FREE":
-            aditional_data = DataDownload.download_riskfree(
-                date_interval=date_interval, outpath=outpath_base
-            )
+        if target_base in self.data["Asset"].unique():
+            warnings.warn(f"{target_base} data already exists.")
+        else:
+            if target_base == "IBOV":
+                aditional_data = DataDownload.download_ibov(
+                    date_interval=date_interval, outpath=outpath_base
+                )
+                aditional_data["Date"] = aditional_data["Date"].dt.date
+            elif target_base == "RISK_FREE":
+                aditional_data = DataDownload.download_riskfree(
+                    date_interval=date_interval, outpath=outpath_base
+                )
 
-        aditional_data["Asset"] = target_base
-        self.data = pd.concat([self.data, aditional_data])
+            aditional_data["Asset"] = target_base
+            self.data = pd.concat([self.data, aditional_data])
 
-        if self.auto_compute:
-            self.update()
+            if self.auto_compute:
+                self.update()
 
     def estimate_factors(self, selected: Union[str, List[str]] = "all"):
         """Estimate alphas and betas from the one-factor model.
