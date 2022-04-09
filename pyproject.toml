@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "analyzebrfunds"
+version = "0.1.0"
+description = ""
+authors = ["Marcel Zanetti <marcel.mzc@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+requests = "^2.27.1"
+pandas-datareader = "^0.10.0"
+pandas = "^1.4.2"
+dask = "^2022.4.0"
+numpy = "^1.22.3"
+scipy = "^1.8.0"
+matplotlib = "^3.5.1"
+xlrd = "^2.0.1"
+
+[tool.poetry.dev-dependencies]
+ipykernel = "^6.12.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
