@@ -1,7 +1,7 @@
 import pandas as pd
 
 import datetime
-from utils import DataDownload
+import DataDownload
 from scipy import stats
 import numpy as np
 
