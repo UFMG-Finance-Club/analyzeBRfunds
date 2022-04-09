@@ -57,6 +57,7 @@ legend.handletextpad: 1.2
 ## ***************************************************************************
 ## * FIGURE                                                                  *
 ## ***************************************************************************
-figure.figsize: 14,6
+figure.figsize: 12, 5
 figure.facecolor: f7f7f7
 figure.subplot.wspace: .2
+figure.dpi: 300
